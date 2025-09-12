@@ -72,7 +72,6 @@ Dark theme optimized for traffic data visualization with excellent contrast */
     --sidebar-ring: 217 91% 60%;
   }
 }
-}
 
 @layer base {
   * {
