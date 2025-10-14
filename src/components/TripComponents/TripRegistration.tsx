@@ -5,8 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Download, Calendar, Car } from "lucide-react";
+import { MapPin, Download, Car } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export function TripRegistration() {
   const [formData, setFormData] = useState({
@@ -18,18 +21,58 @@ export function TripRegistration() {
     travelDate: "",
   });
   const [tripId, setTripId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Generate trip ID
-    const id = `TRP${Date.now().toString().slice(-6)}`;
-    setTripId(id);
     
-    toast({
-      title: "Trip Registered Successfully! 🎉",
-      description: `Your Trip ID: ${id}. Permit is ready for download.`,
-    });
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to register a trip.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Generate trip ID
+      const id = `TRP${Date.now().toString().slice(-6)}`;
+      
+      // Save trip to database
+      const { error } = await supabase.from('trips').insert({
+        user_id: user.id,
+        trip_id: id,
+        origin: formData.origin,
+        destination: formData.destination,
+        state: formData.state,
+        district: formData.district,
+        vehicle_type: formData.vehicleType,
+        travel_date: formData.travelDate,
+        status: 'pending',
+      });
+
+      if (error) throw error;
+
+      setTripId(id);
+      
+      toast({
+        title: "Trip Registered Successfully! 🎉",
+        description: `Your Trip ID: ${id}. Permit is ready for download.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const downloadPermit = () => {
@@ -78,16 +121,17 @@ export function TripRegistration() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
+                <Label htmlFor="state">State / Union Territory</Label>
                 <Select onValueChange={(value) => setFormData({ ...formData, state: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="maharashtra">Maharashtra</SelectItem>
-                    <SelectItem value="gujarat">Gujarat</SelectItem>
-                    <SelectItem value="rajasthan">Rajasthan</SelectItem>
-                    <SelectItem value="karnataka">Karnataka</SelectItem>
+                    {INDIAN_STATES.map((state) => (
+                      <SelectItem key={state.value} value={state.value}>
+                        {state.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -105,17 +149,13 @@ export function TripRegistration() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="vehicleType">Vehicle Type</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, vehicleType: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select vehicle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="car">Car</SelectItem>
-                    <SelectItem value="bike">Motorcycle</SelectItem>
-                    <SelectItem value="truck">Truck</SelectItem>
-                    <SelectItem value="bus">Bus</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="vehicleType"
+                  placeholder="e.g., Car, Bus, Truck, Motorcycle"
+                  value={formData.vehicleType}
+                  onChange={(e) => setFormData({ ...formData, vehicleType: e.target.value })}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="travelDate">Travel Date</Label>
@@ -129,9 +169,9 @@ export function TripRegistration() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
+            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
               <Car className="mr-2 h-4 w-4" />
-              Register Trip
+              {isSubmitting ? "Registering..." : "Register Trip"}
             </Button>
           </form>
 

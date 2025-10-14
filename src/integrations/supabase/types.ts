@@ -14,7 +14,179 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      eco_rewards: {
+        Row: {
+          awarded_at: string
+          co2_saved_kg: number | null
+          distance_km: number | null
+          duration_minutes: number | null
+          id: string
+          points_earned: number
+          transport_mode: string
+          trip_id: string | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          co2_saved_kg?: number | null
+          distance_km?: number | null
+          duration_minutes?: number | null
+          id?: string
+          points_earned?: number
+          transport_mode: string
+          trip_id?: string | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          co2_saved_kg?: number | null
+          distance_km?: number | null
+          duration_minutes?: number | null
+          id?: string
+          points_earned?: number
+          transport_mode?: string
+          trip_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eco_rewards_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          eco_points: number | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          total_trips: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          eco_points?: number | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          total_trips?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          eco_points?: number | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          total_trips?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      traffic_incidents: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_delay_minutes: number | null
+          id: string
+          latitude: number | null
+          location: string
+          longitude: number | null
+          resolved_at: string | null
+          severity: string
+          status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_delay_minutes?: number | null
+          id?: string
+          latitude?: number | null
+          location: string
+          longitude?: number | null
+          resolved_at?: string | null
+          severity: string
+          status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_delay_minutes?: number | null
+          id?: string
+          latitude?: number | null
+          location?: string
+          longitude?: number | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          created_at: string
+          destination: string
+          district: string | null
+          id: string
+          origin: string
+          route_data: Json | null
+          state: string
+          status: string | null
+          travel_date: string
+          trip_id: string
+          updated_at: string
+          user_id: string
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string
+          destination: string
+          district?: string | null
+          id?: string
+          origin: string
+          route_data?: Json | null
+          state: string
+          status?: string | null
+          travel_date: string
+          trip_id: string
+          updated_at?: string
+          user_id: string
+          vehicle_type: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          district?: string | null
+          id?: string
+          origin?: string
+          route_data?: Json | null
+          state?: string
+          status?: string | null
+          travel_date?: string
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

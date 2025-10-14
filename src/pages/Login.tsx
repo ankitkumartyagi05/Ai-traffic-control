@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Car, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -21,27 +22,29 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Welcome back! 🚗",
+        description: "Successfully logged into AI Traffic System",
+      });
       
-      if (formData.email === "demo@traffic.com" && formData.password === "demo123") {
-        toast({
-          title: "Welcome back! 🚗",
-          description: "Successfully logged into AI Traffic System",
-        });
-        // Redirect would happen here
-      } else {
-        setError("Invalid email or password. Try demo@traffic.com / demo123");
-      }
-    } catch (err) {
-      setError("Login failed. Please try again.");
+      navigate("/");
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -166,12 +169,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Demo credentials info */}
-              <div className="mt-4 p-3 bg-status-info/10 rounded-lg border border-status-info/20">
-                <p className="text-xs text-status-info font-medium">Demo Credentials:</p>
-                <p className="text-xs text-muted-foreground">Email: demo@traffic.com</p>
-                <p className="text-xs text-muted-foreground">Password: demo123</p>
-              </div>
             </CardContent>
           </Card>
         </div>

@@ -1,0 +1,50 @@
+// All Indian States and Union Territories
+export const INDIAN_STATES = [
+  // States
+  { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
+  { value: 'arunachal_pradesh', label: 'Arunachal Pradesh' },
+  { value: 'assam', label: 'Assam' },
+  { value: 'bihar', label: 'Bihar' },
+  { value: 'chhattisgarh', label: 'Chhattisgarh' },
+  { value: 'goa', label: 'Goa' },
+  { value: 'gujarat', label: 'Gujarat' },
+  { value: 'haryana', label: 'Haryana' },
+  { value: 'himachal_pradesh', label: 'Himachal Pradesh' },
+  { value: 'jharkhand', label: 'Jharkhand' },
+  { value: 'karnataka', label: 'Karnataka' },
+  { value: 'kerala', label: 'Kerala' },
+  { value: 'madhya_pradesh', label: 'Madhya Pradesh' },
+  { value: 'maharashtra', label: 'Maharashtra' },
+  { value: 'manipur', label: 'Manipur' },
+  { value: 'meghalaya', label: 'Meghalaya' },
+  { value: 'mizoram', label: 'Mizoram' },
+  { value: 'nagaland', label: 'Nagaland' },
+  { value: 'odisha', label: 'Odisha' },
+  { value: 'punjab', label: 'Punjab' },
+  { value: 'rajasthan', label: 'Rajasthan' },
+  { value: 'sikkim', label: 'Sikkim' },
+  { value: 'tamil_nadu', label: 'Tamil Nadu' },
+  { value: 'telangana', label: 'Telangana' },
+  { value: 'tripura', label: 'Tripura' },
+  { value: 'uttar_pradesh', label: 'Uttar Pradesh' },
+  { value: 'uttarakhand', label: 'Uttarakhand' },
+  { value: 'west_bengal', label: 'West Bengal' },
+  // Union Territories
+  { value: 'andaman_nicobar', label: 'Andaman and Nicobar Islands (UT)' },
+  { value: 'chandigarh', label: 'Chandigarh (UT)' },
+  { value: 'dadra_nagar_haveli_daman_diu', label: 'Dadra and Nagar Haveli and Daman and Diu (UT)' },
+  { value: 'delhi', label: 'Delhi (UT)' },
+  { value: 'jammu_kashmir', label: 'Jammu and Kashmir (UT)' },
+  { value: 'ladakh', label: 'Ladakh (UT)' },
+  { value: 'lakshadweep', label: 'Lakshadweep (UT)' },
+  { value: 'puducherry', label: 'Puducherry (UT)' },
+];
+
+// Eco-friendly transport modes with points
+export const ECO_TRANSPORT_MODES = {
+  public_transport: { label: 'Public Transport', points: 10 },
+  bicycle: { label: 'Bicycle', points: 20 },
+  walking: { label: 'Walking', points: 25 },
+  running: { label: 'Running', points: 25 },
+  jogging: { label: 'Jogging', points: 25 },
+};

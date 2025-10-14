@@ -2,10 +2,8 @@ import { useState } from "react";
 import { Header } from "@/components/Layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Accordion,
   AccordionContent,
@@ -26,6 +24,7 @@ import {
   Clock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChatMessage {
   id: string;
@@ -39,7 +38,7 @@ const Support = () => {
     {
       id: "1",
       type: "bot",
-      message: "Hello! 👋 I'm your AI Traffic Assistant. How can I help you today?",
+      message: "Hello! 👋 I'm your AI Traffic Assistant powered by advanced AI. How can I help you today?",
       timestamp: new Date()
     }
   ]);
@@ -54,19 +53,19 @@ const Support = () => {
     },
     {
       question: "How accurate is the traffic prediction?",
-      answer: "Our AI system provides 98.5% accuracy in traffic predictions using real-time data, historical patterns, and machine learning algorithms."
+      answer: "Our AI system provides real-time accuracy using live data, historical patterns, weather integration, and multi-layer AI control across road, city, and regional levels."
     },
     {
       question: "What should I do in case of emergency?",
-      answer: "Use the Emergency SOS button available on multiple pages. It will instantly alert emergency services, share your location, and notify your emergency contacts."
+      answer: "Use the Emergency SOS button available on multiple pages. Emergency vehicles are automatically prioritized in our traffic system with dynamic route clearing."
     },
     {
       question: "How do I earn eco-rewards points?",
-      answer: "You earn points by choosing eco-friendly routes, using public transport, carpooling, and following fuel-efficient driving suggestions."
+      answer: "You earn points by using eco-friendly transport like public transport (+10 pts), bicycle (+20 pts), walking/running/jogging (+25 pts). Points contribute to environmental conservation!"
     },
     {
-      question: "Can I track public transport in real-time?",
-      answer: "Yes! Our system tracks buses and trains in over 150 cities with real-time location updates and delay notifications."
+      question: "What are the new AI features?",
+      answer: "Our system includes: Real-time congestion prediction, Emergency vehicle prioritization, Dynamic route diversion during events, Multi-layer AI control, Weather integration, and Pedestrian & bicycle signal optimization."
     }
   ];
 
@@ -81,35 +80,35 @@ const Support = () => {
     };
 
     setChatMessages(prev => [...prev, userMessage]);
+    const messageToSend = currentMessage;
     setCurrentMessage("");
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      // Call AI chatbot edge function
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: { message: messageToSend }
+      });
+
+      if (error) throw error;
+
       const botResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "bot",
-        message: getBotResponse(currentMessage),
+        message: data.generatedText || "I'm here to help with traffic queries!",
         timestamp: new Date()
       };
+      
       setChatMessages(prev => [...prev, botResponse]);
+    } catch (error: any) {
+      console.error('Chat error:', error);
+      toast({
+        title: "Chat Error",
+        description: "Unable to get response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsTyping(false);
-    }, 1500);
-  };
-
-  const getBotResponse = (userMessage: string): string => {
-    const msg = userMessage.toLowerCase();
-    
-    if (msg.includes("route") || msg.includes("direction")) {
-      return "I can help you find the best route! Use our Route Finder to get AI-powered suggestions with real-time traffic analysis. Would you like me to guide you through it?";
-    } else if (msg.includes("emergency") || msg.includes("sos")) {
-      return "For emergencies, use the red SOS button available throughout the app. It instantly alerts authorities and shares your location. For non-emergencies, I can help resolve your queries.";
-    } else if (msg.includes("traffic") || msg.includes("congestion")) {
-      return "Check our Live Traffic Monitoring page for real-time updates. I can also provide current traffic status for specific routes if you share your location.";
-    } else if (msg.includes("trip") || msg.includes("permit")) {
-      return "To register a trip, visit the Register Trip page. You'll get an official permit and Trip ID for tracking. Need help with a specific step?";
-    } else {
-      return "Thanks for your question! I can help with route planning, trip registration, traffic updates, emergency assistance, and eco-rewards. What would you like to know more about?";
     }
   };
 
@@ -140,7 +139,7 @@ const Support = () => {
                 <CardTitle className="flex items-center">
                   <Bot className="mr-2 h-5 w-5 text-primary" />
                   AI Traffic Assistant
-                  <Badge className="ml-2 bg-status-success text-white">Online</Badge>
+                  <Badge className="ml-2 bg-status-success text-white">AI-Powered</Badge>
                 </CardTitle>
                 <CardDescription>
                   24/7 intelligent support for all your traffic queries
@@ -181,7 +180,7 @@ const Support = () => {
                         <Bot className="h-4 w-4" />
                       </div>
                       <div className="rounded-lg px-4 py-2 bg-muted">
-                        <p className="text-sm">AI is typing...</p>
+                        <p className="text-sm">AI is thinking...</p>
                       </div>
                     </div>
                   )}
@@ -196,7 +195,7 @@ const Support = () => {
                     onKeyPress={handleKeyPress}
                     className="flex-1"
                   />
-                  <Button onClick={sendMessage} disabled={!currentMessage.trim()}>
+                  <Button onClick={sendMessage} disabled={!currentMessage.trim() || isTyping}>
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
@@ -239,7 +238,7 @@ const Support = () => {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center">
                     <Zap className="mr-2 h-4 w-4 text-status-success" />
-                    Traffic API
+                    AI Traffic System
                   </span>
                   <Badge className="bg-status-success text-white">Online</Badge>
                 </div>

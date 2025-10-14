@@ -15,69 +15,69 @@ import {
   Bike,
   Truck,
   RefreshCw,
-  Zap
+  Zap,
+  Shield,
+  Users
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TrafficIncident {
   id: string;
-  type: "accident" | "construction" | "congestion" | "weather";
+  type: "accident" | "construction" | "congestion" | "weather" | "event";
   location: string;
-  severity: "low" | "medium" | "high";
+  severity: "low" | "medium" | "high" | "critical";
   description: string;
-  estimatedDelay: string;
-  lastUpdated: string;
+  estimated_delay_minutes: number;
+  latitude?: number;
+  longitude?: number;
+  created_at: string;
 }
 
 const LiveTracking = () => {
-  const [incidents, setIncidents] = useState<TrafficIncident[]>([
-    {
-      id: "1",
-      type: "accident",
-      location: "Highway 101, Mile 25",
-      severity: "high",
-      description: "Multi-vehicle accident blocking 2 lanes",
-      estimatedDelay: "25-30 min",
-      lastUpdated: "2 min ago"
-    },
-    {
-      id: "2", 
-      type: "construction",
-      location: "Main Street Bridge",
-      severity: "medium",
-      description: "Bridge maintenance, single lane operation",
-      estimatedDelay: "10-15 min",
-      lastUpdated: "5 min ago"
-    },
-    {
-      id: "3",
-      type: "congestion",
-      location: "Downtown Financial District", 
-      severity: "medium",
-      description: "Heavy rush hour traffic",
-      estimatedDelay: "15-20 min",
-      lastUpdated: "1 min ago"
-    }
-  ]);
-
+  const [incidents, setIncidents] = useState<TrafficIncident[]>([]);
   const [isLiveMode, setIsLiveMode] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const { toast } = useToast();
 
   useEffect(() => {
+    loadTrafficIncidents();
+
     if (isLiveMode) {
       const interval = setInterval(() => {
+        loadTrafficIncidents();
         setLastUpdate(new Date());
-        // Simulate real-time updates
       }, 30000); // Update every 30 seconds
 
       return () => clearInterval(interval);
     }
   }, [isLiveMode]);
 
+  const loadTrafficIncidents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('traffic_incidents')
+        .select('*')
+        .eq('status', 'active')
+        .order('severity', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      if (data) {
+        setIncidents(data as TrafficIncident[]);
+      }
+    } catch (error: any) {
+      console.error('Error loading traffic incidents:', error);
+    }
+  };
+
   const getIncidentIcon = (type: string) => {
     switch (type) {
       case "accident": return AlertTriangle;
       case "construction": return Car;
       case "congestion": return Navigation;
+      case "event": return Users;
       case "weather": return Clock;
       default: return AlertTriangle;
     }
@@ -85,6 +85,7 @@ const LiveTracking = () => {
 
   const getIncidentColor = (severity: string) => {
     switch (severity) {
+      case "critical": return "border-status-emergency bg-status-emergency/10";
       case "high": return "border-status-emergency bg-status-emergency/10";
       case "medium": return "border-status-warning bg-status-warning/10";
       case "low": return "border-status-info bg-status-info/10";
@@ -94,7 +95,8 @@ const LiveTracking = () => {
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
-      case "high": return <Badge className="bg-status-emergency text-white">Critical</Badge>;
+      case "critical": return <Badge className="bg-status-emergency text-white">Critical</Badge>;
+      case "high": return <Badge className="bg-status-emergency text-white">High</Badge>;
       case "medium": return <Badge className="bg-status-warning text-black">Moderate</Badge>;
       case "low": return <Badge className="bg-status-info text-white">Minor</Badge>;
       default: return <Badge variant="secondary">Unknown</Badge>;
@@ -109,9 +111,9 @@ const LiveTracking = () => {
         <div className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Live Traffic Monitoring</h1>
           <p className="text-xl text-muted-foreground mb-4">
-            Real-time traffic updates and incident tracking
+            Real-time traffic updates with AI-powered incident tracking
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <Badge className={`${isLiveMode ? 'bg-status-success' : 'bg-muted'} text-white`}>
               {isLiveMode ? (
                 <>
@@ -122,6 +124,8 @@ const LiveTracking = () => {
                 'PAUSED'
               )}
             </Badge>
+            <Badge className="bg-primary"><Shield className="mr-1 h-3 w-3" />Emergency Priority Active</Badge>
+            <Badge className="bg-status-info text-white"><Users className="mr-1 h-3 w-3" />Pedestrian Optimization</Badge>
             <span className="text-sm text-muted-foreground">
               Last updated: {lastUpdate.toLocaleTimeString()}
             </span>
@@ -146,20 +150,19 @@ const LiveTracking = () => {
                   Live Traffic Map
                 </CardTitle>
                 <CardDescription>
-                  Interactive map showing real-time traffic conditions
+                  Interactive map with multi-layer AI control (road, city, region)
                 </CardDescription>
               </CardHeader>
               <CardContent className="h-full">
                 <div className="relative w-full h-[500px] bg-card rounded-lg border border-border overflow-hidden">
-                  {/* Map placeholder with traffic visualization */}
                   <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-muted opacity-50"></div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center space-y-4">
                       <MapPin className="h-16 w-16 text-primary mx-auto" />
                       <div>
-                        <h3 className="text-lg font-semibold">Interactive Traffic Map</h3>
+                        <h3 className="text-lg font-semibold">Real-Time Traffic Visualization</h3>
                         <p className="text-muted-foreground">
-                          Live traffic visualization with color-coded routes
+                          AI-powered traffic map with weather integration
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2 justify-center">
@@ -193,39 +196,44 @@ const LiveTracking = () => {
                   <AlertTriangle className="mr-2 h-5 w-5 text-status-warning" />
                   Active Incidents ({incidents.length})
                 </CardTitle>
+                <CardDescription>Real-time incident detection & dynamic rerouting</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {incidents.map((incident) => {
-                    const IncidentIcon = getIncidentIcon(incident.type);
-                    return (
-                      <div
-                        key={incident.id}
-                        className={`p-4 rounded-lg border ${getIncidentColor(incident.severity)}`}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <IncidentIcon className="h-4 w-4" />
-                            <span className="font-medium">{incident.location}</span>
+                {incidents.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">No active incidents</p>
+                ) : (
+                  <div className="space-y-4">
+                    {incidents.map((incident) => {
+                      const IncidentIcon = getIncidentIcon(incident.type);
+                      return (
+                        <div
+                          key={incident.id}
+                          className={`p-4 rounded-lg border ${getIncidentColor(incident.severity)}`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <IncidentIcon className="h-4 w-4" />
+                              <span className="font-medium">{incident.location}</span>
+                            </div>
+                            {getSeverityBadge(incident.severity)}
                           </div>
-                          {getSeverityBadge(incident.severity)}
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {incident.description}
+                          </p>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="flex items-center text-status-warning">
+                              <Clock className="mr-1 h-3 w-3" />
+                              Delay: {incident.estimated_delay_minutes} min
+                            </span>
+                            <span className="text-muted-foreground">
+                              {new Date(incident.created_at).toLocaleTimeString()}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {incident.description}
-                        </p>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="flex items-center text-status-warning">
-                            <Clock className="mr-1 h-3 w-3" />
-                            Delay: {incident.estimatedDelay}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {incident.lastUpdated}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -236,13 +244,14 @@ const LiveTracking = () => {
                   <Car className="mr-2 h-5 w-5 text-primary" />
                   Vehicle Categories
                 </CardTitle>
+                <CardDescription>Real-time tracking by vehicle type</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div className="flex items-center space-x-2">
                       <Car className="h-4 w-4 text-primary" />
-                      <span>Cars</span>
+                      <span>Private Cars</span>
                     </div>
                     <TrafficStatusBadge status="moderate" />
                   </div>
@@ -274,7 +283,11 @@ const LiveTracking = () => {
             {/* Emergency Section */}
             <Card className="border-status-emergency">
               <CardHeader>
-                <CardTitle className="text-status-emergency">Emergency Assistance</CardTitle>
+                <CardTitle className="text-status-emergency flex items-center">
+                  <Shield className="mr-2 h-5 w-5" />
+                  Emergency Assistance
+                </CardTitle>
+                <CardDescription>Instant emergency vehicle prioritization</CardDescription>
               </CardHeader>
               <CardContent>
                 <EmergencySOSButton />

@@ -8,6 +8,7 @@ import RegisterTrip from "./pages/RegisterTrip";
 import RouteFinder from "./pages/RouteFinder";
 import LiveTracking from "./pages/LiveTracking";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Support from "./pages/Support";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/route-finder" element={<RouteFinder />} />
           <Route path="/tracking" element={<LiveTracking />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/support" element={<Support />} />
           <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
