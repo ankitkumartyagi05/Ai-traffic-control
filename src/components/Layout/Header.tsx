@@ -1,12 +1,9 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
@@ -32,11 +29,20 @@ import {
   Navigation,
   AlertTriangle,
   MessageCircle,
+  Shield,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "@/components/ui/badge";
 
 export function Header() {
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   const navItems = [
     { href: "/", label: "Home", icon: Car },
@@ -45,6 +51,10 @@ export function Header() {
     { href: "/tracking", label: "Live Tracking", icon: AlertTriangle },
     { href: "/support", label: "Support", icon: MessageCircle },
   ];
+
+  const adminNavItems = isAdmin
+    ? [{ href: "/admin", label: "Admin Panel", icon: Shield }]
+    : [];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -62,7 +72,7 @@ export function Header() {
         {/* Desktop Navigation */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {navItems.map((item) => (
+            {[...navItems, ...adminNavItems].map((item) => (
               <NavigationMenuItem key={item.href}>
                 <Link
                   to={item.href}
@@ -74,6 +84,9 @@ export function Header() {
                 >
                   <item.icon className="mr-2 h-4 w-4" />
                   {item.label}
+                  {item.label === "Admin Panel" && (
+                    <Badge variant="secondary" className="ml-2">Admin</Badge>
+                  )}
                 </Link>
               </NavigationMenuItem>
             ))}
@@ -82,7 +95,7 @@ export function Header() {
 
         {/* Desktop Auth */}
         <div className="hidden items-center space-x-2 md:flex">
-          {isLoggedIn ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
@@ -97,13 +110,15 @@ export function Header() {
                     My Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
@@ -137,7 +152,7 @@ export function Header() {
               </SheetDescription>
             </SheetHeader>
             <nav className="flex flex-col space-y-4 mt-6">
-              {navItems.map((item) => (
+              {[...navItems, ...adminNavItems].map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
@@ -149,10 +164,13 @@ export function Header() {
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.label}</span>
+                  {item.label === "Admin Panel" && (
+                    <Badge variant="secondary" className="ml-2">Admin</Badge>
+                  )}
                 </Link>
               ))}
               <div className="border-t border-border pt-4 space-y-2">
-                {isLoggedIn ? (
+                {user ? (
                   <>
                     <Button variant="ghost" className="w-full justify-start" asChild>
                       <Link to="/profile">
@@ -163,7 +181,7 @@ export function Header() {
                     <Button
                       variant="ghost"
                       className="w-full justify-start"
-                      onClick={() => setIsLoggedIn(false)}
+                      onClick={handleLogout}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       Logout

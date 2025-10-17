@@ -4,12 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Download, Car } from "lucide-react";
+import { Car, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { INDIAN_STATES } from "@/lib/constants";
+import { INDIAN_STATES, ECO_TRANSPORT_MODES } from "@/lib/constants";
+import { TripSlip } from "./TripSlip";
 
 export function TripRegistration() {
   const [formData, setFormData] = useState({
@@ -176,33 +176,16 @@ export function TripRegistration() {
           </form>
 
           {tripId && (
-            <div className="mt-6 p-4 border border-status-success rounded-lg bg-status-success/10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-status-success">Trip Registered!</h3>
-                <Badge variant="secondary" className="bg-status-success text-white">
-                  {tripId}
-                </Badge>
-              </div>
-              <div className="space-y-2">
-                <Button
-                  onClick={downloadPermit}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Permit (PDF)
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  asChild
-                >
-                  <a href="/route-finder">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Find Best Route
-                  </a>
-                </Button>
-              </div>
+            <div className="mt-6">
+              <TripSlip
+                tripId={tripId}
+                origin={formData.origin}
+                destination={formData.destination}
+                state={formData.state}
+                district={formData.district}
+                vehicleType={formData.vehicleType}
+                travelDate={formData.travelDate}
+              />
             </div>
           )}
         </CardContent>

@@ -65,6 +65,7 @@ export type Database = {
           eco_points: number | null
           full_name: string | null
           id: string
+          last_transport_mode: string | null
           phone: string | null
           total_trips: number | null
           updated_at: string
@@ -76,6 +77,7 @@ export type Database = {
           eco_points?: number | null
           full_name?: string | null
           id?: string
+          last_transport_mode?: string | null
           phone?: string | null
           total_trips?: number | null
           updated_at?: string
@@ -87,6 +89,7 @@ export type Database = {
           eco_points?: number | null
           full_name?: string | null
           id?: string
+          last_transport_mode?: string | null
           phone?: string | null
           total_trips?: number | null
           updated_at?: string
@@ -187,15 +190,56 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      award_eco_points: {
+        Args: {
+          p_distance_km: number
+          p_duration_minutes: number
+          p_transport_mode: string
+          p_trip_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -322,6 +366,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "admin", "user"],
+    },
   },
 } as const

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrafficStatusBadge } from "@/components/TrafficComponents/TrafficStatusBadge";
 import { EmergencySOSButton } from "@/components/TrafficComponents/EmergencySOSButton";
+import { TrafficMap } from "@/components/Map/TrafficMap";
 import { 
   MapPin, 
   Navigation, 
@@ -141,22 +142,29 @@ const LiveTracking = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Traffic Map Placeholder */}
+          {/* Traffic Map */}
           <div className="lg:col-span-2">
-            <Card className="h-[600px]">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <MapPin className="mr-2 h-5 w-5 text-primary" />
                   Live Traffic Map
                 </CardTitle>
                 <CardDescription>
-                  Interactive map with multi-layer AI control (road, city, region)
+                  Interactive map with real-time traffic incidents
                 </CardDescription>
               </CardHeader>
-              <CardContent className="h-full">
-                <div className="relative w-full h-[500px] bg-card rounded-lg border border-border overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-muted opacity-50"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
+              <CardContent>
+                <TrafficMap 
+                  incidents={incidents.map(inc => ({
+                    id: inc.id,
+                    latitude: Number(inc.latitude) || 0,
+                    longitude: Number(inc.longitude) || 0,
+                    type: inc.type,
+                    severity: inc.severity,
+                    description: inc.description || undefined,
+                  }))}
+                />
                     <div className="text-center space-y-4">
                       <MapPin className="h-16 w-16 text-primary mx-auto" />
                       <div>
