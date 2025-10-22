@@ -53,17 +53,21 @@ serve(async (req) => {
       );
     }
 
-    const MAPBOX_API_KEY = Deno.env.get('MAPBOX_API_KEY');
+    const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
 
-    if (!MAPBOX_API_KEY) {
-      throw new Error('MAPBOX_API_KEY is not configured');
+    if (!GOOGLE_MAPS_API_KEY) {
+      throw new Error('GOOGLE_MAPS_API_KEY is not configured');
     }
 
     console.log('Processing route request');
 
-    // Mapbox Directions API
-    const coordinates = `${origin.lon},${origin.lat};${destination.lon},${destination.lat}`;
-    const apiUrl = `https://api.mapbox.com/directions/v5/mapbox/${profile || 'driving-traffic'}/${coordinates}?alternatives=true&geometries=geojson&steps=true&access_token=${MAPBOX_API_KEY}`;
+    // Map profile to Google Maps travel mode
+    const travelMode = profile === 'walking' ? 'walking' : 
+                      profile === 'cycling' ? 'bicycling' :
+                      'driving';
+
+    // Google Maps Directions API
+    const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.lat},${origin.lon}&destination=${destination.lat},${destination.lon}&mode=${travelMode}&alternatives=true&key=${GOOGLE_MAPS_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',
@@ -74,11 +78,17 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Mapbox API error:', response.status, errorText);
-      throw new Error(`Mapbox API error: ${response.status}`);
+      console.error('Google Maps API error:', response.status, errorText);
+      throw new Error(`Google Maps API error: ${response.status}`);
     }
 
     const data = await response.json();
+    
+    if (data.status !== 'OK') {
+      console.error('Google Maps API returned error:', data.status, data.error_message);
+      throw new Error(`Google Maps API error: ${data.status}`);
+    }
+
     console.log('Route data retrieved successfully');
 
     return new Response(
@@ -90,7 +100,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in map-routes function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Failed to fetch route data from Google Maps API'
+      }), 
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
