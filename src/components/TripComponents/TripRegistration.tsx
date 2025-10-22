@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { INDIAN_STATES, ECO_TRANSPORT_MODES } from "@/lib/constants";
 import { TripSlip } from "./TripSlip";
+import { tripRegistrationSchema } from "@/lib/validations";
 
 export function TripRegistration() {
   const [formData, setFormData] = useState({
@@ -32,6 +33,24 @@ export function TripRegistration() {
       toast({
         title: "Authentication Required",
         description: "Please log in to register a trip.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const validationResult = tripRegistrationSchema.safeParse({
+      origin: formData.origin,
+      destination: formData.destination,
+      state: formData.state,
+      district: formData.district,
+      vehicleType: formData.vehicleType,
+      travelDate: formData.travelDate
+    });
+
+    if (!validationResult.success) {
+      toast({
+        title: "Validation Error",
+        description: validationResult.error.errors[0].message,
         variant: "destructive",
       });
       return;

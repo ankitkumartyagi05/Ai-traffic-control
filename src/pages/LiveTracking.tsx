@@ -165,32 +165,6 @@ const LiveTracking = () => {
                     description: inc.description || undefined,
                   }))}
                 />
-                    <div className="text-center space-y-4">
-                      <MapPin className="h-16 w-16 text-primary mx-auto" />
-                      <div>
-                        <h3 className="text-lg font-semibold">Real-Time Traffic Visualization</h3>
-                        <p className="text-muted-foreground">
-                          AI-powered traffic map with weather integration
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        <TrafficStatusBadge status="free" />
-                        <TrafficStatusBadge status="moderate" />
-                        <TrafficStatusBadge status="heavy" />
-                        <TrafficStatusBadge status="gridlock" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Simulated traffic indicators */}
-                  <div className="absolute top-4 left-4">
-                    <div className="flex space-x-2">
-                      <div className="w-3 h-3 bg-traffic-free rounded-full animate-pulse"></div>
-                      <div className="w-3 h-3 bg-traffic-moderate rounded-full animate-pulse"></div>
-                      <div className="w-3 h-3 bg-traffic-heavy rounded-full animate-pulse"></div>
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

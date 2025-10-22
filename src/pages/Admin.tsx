@@ -109,16 +109,17 @@ const Admin = () => {
         return;
       }
 
-      // Add admin role
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: profile.user_id,
-          role: 'admin',
-        });
+      // Use secure backend edge function
+      const { data, error } = await supabase.functions.invoke('admin-operations', {
+        body: {
+          action: 'add_role',
+          targetUserId: profile.user_id,
+          role: 'admin'
+        }
+      });
 
       if (error) {
-        if (error.code === '23505') {
+        if (error.message?.includes('23505') || error.message?.includes('already')) {
           toast({
             title: "Already Admin",
             description: "This user is already an admin.",
@@ -149,10 +150,23 @@ const Admin = () => {
 
   const handleRemoveRole = async (roleId: string) => {
     try {
-      const { error } = await supabase
+      // Get role details first
+      const { data: roleData, error: fetchError } = await supabase
         .from('user_roles')
-        .delete()
-        .eq('id', roleId);
+        .select('user_id, role')
+        .eq('id', roleId)
+        .single();
+
+      if (fetchError || !roleData) throw fetchError || new Error('Role not found');
+
+      // Use secure backend edge function
+      const { data, error } = await supabase.functions.invoke('admin-operations', {
+        body: {
+          action: 'remove_role',
+          targetUserId: roleData.user_id,
+          role: roleData.role
+        }
+      });
 
       if (error) throw error;
 

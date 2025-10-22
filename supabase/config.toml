@@ -1,10 +1,13 @@
 project_id = "gdtyrukgdtbjfhaxwkhg"
 
 [functions.chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.traffic-data]
-verify_jwt = false
+verify_jwt = true
 
 [functions.map-routes]
-verify_jwt = false
+verify_jwt = true
+
+[functions.admin-operations]
+verify_jwt = true

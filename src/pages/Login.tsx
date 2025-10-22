@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Car, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { loginSchema } from "@/lib/validations";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +29,17 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    const validationResult = loginSchema.safeParse({ 
+      email: formData.email, 
+      password: formData.password 
+    });
+    
+    if (!validationResult.success) {
+      setError(validationResult.error.errors[0].message);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({

@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Car, Mail, Lock, Eye, EyeOff, AlertCircle, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { registerSchema } from "@/lib/validations";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -29,8 +30,9 @@ const Register = () => {
     setIsLoading(true);
     setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+    const validationResult = registerSchema.safeParse(formData);
+    if (!validationResult.success) {
+      setError(validationResult.error.errors[0].message);
       setIsLoading(false);
       return;
     }
