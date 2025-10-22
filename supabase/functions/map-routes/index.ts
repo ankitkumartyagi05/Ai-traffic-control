@@ -13,13 +13,53 @@ serve(async (req) => {
 
   try {
     const { origin, destination, profile } = await req.json();
+
+    // Input validation for coordinates
+    if (!origin || typeof origin !== 'object' || typeof origin.lat !== 'number' || typeof origin.lon !== 'number') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid origin: must be an object with lat and lon numbers' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!destination || typeof destination !== 'object' || typeof destination.lat !== 'number' || typeof destination.lon !== 'number') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid destination: must be an object with lat and lon numbers' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate coordinate ranges
+    if (Math.abs(origin.lat) > 90 || Math.abs(origin.lon) > 180) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid origin coordinates: latitude must be between -90 and 90, longitude between -180 and 180' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (Math.abs(destination.lat) > 90 || Math.abs(destination.lon) > 180) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid destination coordinates: latitude must be between -90 and 90, longitude between -180 and 180' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate profile if provided
+    const validProfiles = ['driving-traffic', 'driving', 'walking', 'cycling'];
+    if (profile && !validProfiles.includes(profile)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid profile: must be one of ${validProfiles.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const MAPBOX_API_KEY = Deno.env.get('MAPBOX_API_KEY');
 
     if (!MAPBOX_API_KEY) {
       throw new Error('MAPBOX_API_KEY is not configured');
     }
 
-    console.log('Fetching route from', origin, 'to', destination);
+    console.log('Processing route request');
 
     // Mapbox Directions API
     const coordinates = `${origin.lon},${origin.lat};${destination.lon},${destination.lat}`;

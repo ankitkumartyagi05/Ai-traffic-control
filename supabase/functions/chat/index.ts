@@ -14,13 +14,29 @@ serve(async (req) => {
 
   try {
     const { message } = await req.json();
+
+    // Input validation
+    if (!message || typeof message !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid message: must be a non-empty string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (message.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Message too long: maximum 2000 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    console.log('Processing chat message:', message);
+    console.log('Processing chat request');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -51,7 +67,7 @@ serve(async (req) => {
     const data = await response.json();
     const generatedText = data.choices[0].message.content;
 
-    console.log('Generated response:', generatedText);
+    console.log('Chat response generated successfully');
 
     return new Response(
       JSON.stringify({ generatedText }), 
